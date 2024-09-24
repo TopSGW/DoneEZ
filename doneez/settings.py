@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',  # Optional, for token blacklisting
     'users',
 ]
 
@@ -74,8 +75,12 @@ WSGI_APPLICATION = 'doneez.wsgi.application'
 # Database
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',  # Use PostgreSQL or other DB in production
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'NAME': config("DATABASE_NAME"),
+        'USER': config("DATABASE_USER"),
+        'PASSWORD': config("DATABASE_PASSWORD"),
+        'HOST': config("DATABASE_HOST"),
+        'PORT': config("DATABASE_PORT"),
     }
 }
 
@@ -108,13 +113,13 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Custom user model
-AUTH_USER_MODEL = 'users.User'
+AUTH_USER_MODEL = 'users.CustomUser'
 
 # Authentication backends
-AUTHENTICATION_BACKENDS = [
-    'users.backends.EmailBackend',  # Custom email backend
-    'django.contrib.auth.backends.ModelBackend',  # Default backend
-]
+# AUTHENTICATION_BACKENDS = [
+#     'users.backends.EmailBackend',  # Custom email backend
+#     'django.contrib.auth.backends.ModelBackend',  # Default backend
+# ]
 
 # Django REST Framework configuration
 REST_FRAMEWORK = {
@@ -133,4 +138,6 @@ SIMPLE_JWT = {
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
     'AUTH_HEADER_TYPES': ('Bearer',),
+    'ALGORITHM': 'HS256',
+    'SIGNING_KEY': SECRET_KEY,
 }

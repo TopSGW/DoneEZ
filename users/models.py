@@ -38,26 +38,23 @@ class CustomUser(AbstractBaseUser, PermissionsMixin):
 
 class CustomerProfile(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
-    full_name = models.CharField(max_length=255)
     phone_number = models.CharField(max_length=20, blank=True)
     address = models.TextField(blank=True)
-    zip_code = models.CharField(max_length=10)
-    vehicle_make = models.CharField(max_length=100)
-    vehicle_model = models.CharField(max_length=100)
-    vehicle_year = models.IntegerField()
-    vehicle_mileage = models.IntegerField()
+    zip_code = models.CharField(max_length=10, blank=True)
     date_joined = models.DateTimeField(auto_now_add=True)
-
     def __str__(self):
-        return self.full_name
+        return self.user
 
 class MechanicProfile(models.Model):
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
-    shop_name = models.CharField(max_length=255)
+    business_name = models.CharField(max_length=255)
+    business_info = models.CharField(max_length=4096, blank=True)
+    heard_info = models.CharField(max_length=4096, blank=True)
+    job_title = models.CharField(max_length=30, blank=True)
     rating = models.FloatField(default=0.0)
-    years_of_experience = models.IntegerField()
-    phone_number = models.CharField(max_length=20)
-    address = models.TextField()
+    years_of_experience = models.IntegerField(blank=True,null=True)
+    phone_number = models.CharField(max_length=20, blank=True)
+    address = models.TextField(blank=True)
     zip_code = models.CharField(max_length=10)
     certifications = models.CharField(max_length=255, blank=True)
     is_mobile = models.BooleanField(default=False)
@@ -66,17 +63,18 @@ class MechanicProfile(models.Model):
     verified = models.BooleanField(default=False)
     
     def __str__(self):
-        return self.shop_name
+        return self.business_name
 
-class ServiceCategory(models.Model):
-    name = models.CharField(max_length=255)
-    
+class Vehicles(models.Model):
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='vehicles')
+    vehicle_make = models.CharField(max_length=100)
+    vehicle_model = models.CharField(max_length=100)
+    vehicle_year = models.IntegerField()
+    vehicle_mileage = models.IntegerField()
     def __str__(self):
-        return self.name
-
+        return self.user    
 
 class Service(models.Model):
-    category = models.ForeignKey(ServiceCategory, on_delete=models.CASCADE, related_name='services')
     name = models.CharField(max_length=255)
     description = models.TextField()
     estimated_time = models.DurationField()  # Store estimated time as duration
@@ -87,7 +85,7 @@ class Service(models.Model):
 
 class QuoteRequest(models.Model):
     customer = models.ForeignKey(CustomerProfile, on_delete=models.CASCADE, related_name='quote_requests')
-    service = models.ForeignKey(Service, on_delete=models.CASCADE)
+    service = models.ManyToManyField(Service, related_name='quotes')
     preferred_date = models.DateField()
     description = models.TextField(blank=True)
     photos = models.ImageField(upload_to='service_photos/', blank=True)  # Optional photo upload
@@ -96,6 +94,11 @@ class QuoteRequest(models.Model):
     
     def __str__(self):
         return f"Quote Request by {self.customer.full_name}"
+    
+        # Method to calculate total price of all services
+    def get_total_price(self):
+        total_price = sum(service.base_price for service in self.services.all())
+        return total_price
     
 
 class Quote(models.Model):
@@ -130,7 +133,7 @@ class Payment(models.Model):
     payment_method = models.CharField(max_length=20, choices=[('credit', 'Credit Card'), ('debit', 'Debit Card'), ('cash', 'Cash')])
 
     def __str__(self):
-        return f"Payment by {self.customer.full_name}"
+        return f"Payment by {self.customer.user.first_name}"
 
 class Review(models.Model):
     customer = models.ForeignKey(CustomerProfile, on_delete=models.CASCADE)
@@ -141,7 +144,7 @@ class Review(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     
     def __str__(self):
-        return f"Review for {self.mechanic.shop_name} by {self.customer.full_name}"
+        return f"Review for {self.mechanic.business_name} by {self.customer.user.first_name}"
 
 class Message(models.Model):
     sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='sent_messages')

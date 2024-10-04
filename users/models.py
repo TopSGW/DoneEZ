@@ -54,6 +54,7 @@ class MechanicProfile(models.Model):
     rating = models.FloatField(default=0.0)
     years_of_experience = models.IntegerField(blank=True,null=True)
     phone_number = models.CharField(max_length=20, blank=True)
+    web_site = models.TextField(blank=True)
     address = models.TextField(blank=True)
     zip_code = models.CharField(max_length=10)
     certifications = models.CharField(max_length=255, blank=True)

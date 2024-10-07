@@ -16,7 +16,8 @@ class CustomerProfileSerializer(serializers.ModelSerializer):
 class MechanicProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = MechanicProfile
-        fields = ['business_name', 'job_title', 'web_site', 'business_info', 'heard_info', 'rating', 'availability', 'years_of_experience', 'phone_number', 'address', 'zip_code', 'certifications', 'is_mobile']
+        fields = ['business_name', 'job_title', 'web_site', 'business_info', 'heard_info', 'rating', 'availability', 'years_of_experience', 'phone_number', 'address', 'zip_code', 'certifications', 'is_mobile',
+                  'address_city', 'address_state', 'map_verified', 'address_latitude', 'address_longitude']
 
 class CustomUserSerializer(serializers.ModelSerializer):
     is_customer = serializers.BooleanField(required=True)

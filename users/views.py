@@ -1,6 +1,4 @@
 from django.shortcuts import render
-from decouple import config
-import requests
 
 # Create your views here.
 from rest_framework.views import APIView
@@ -10,8 +8,13 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import get_user_model, authenticate
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.permissions import AllowAny                                                                                                                                                                                                                                                                                                                                                                                                                                       
+from rest_framework.permissions import AllowAny       
+from rest_framework.exceptions import ValidationError
 
+from .utils import calculate_real_distance, calculate_straight_line_distance, get_coordinates_from_zip
+from django.contrib.gis.geos import Point
+from django.contrib.gis.db.models.functions import Distance
+from django.contrib.gis.measure import D  # For distance measurements
 from .models import MechanicProfile, CustomerProfile, CustomUser
 from .serializers import  CustomUserSerializer, UserRegistrationSerializer, MechanicProfileSerializer, CustomerProfileSerializer
 
@@ -91,6 +94,7 @@ class CustomUserRegistrationView(APIView):
                 'refresh': str(refresh),
                 'access': str(access_token),
             }, status=status.HTTP_201_CREATED)
+        print(serializer._errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 # Mechanic View
 class MechanicProfileView(generics.RetrieveAPIView):
@@ -102,87 +106,46 @@ class CustomerProfileView(generics.RetrieveAPIView):
     queryset = CustomerProfile.objects.all()
     serializer_class = CustomerProfileSerializer
 
-GOOGLE_API_KEY = config('GOOGLE_API_KEY')
-
-def get_coordinates_from_zip(zip_code):
-    """
-    Get latitude and longitude from zip code using Google Geocoding API.
-    """
-    url = f"https://maps.googleapis.com/maps/api/geocode/json?address={zip_code}&key={GOOGLE_API_KEY}"
-    response = requests.get(url)
-    data = response.json()
+# Use a local database for zip codes to avoid API calls
+# def get_coordinates_from_zip(zip_code):
+#     """
+#     Get latitude and longitude from zip code using a local database or cache.
+#     """
+#     # Assuming you have a model or a data structure that maps zip codes to coordinates
+#     try:
+#         location = ZipCode.objects.get(code=zip_code)
+#         return location.latitude, location.longitude
+#     except ZipCode.DoesNotExist:
+#         raise ValidationError(f"Invalid zip code: {zip_code}")
     
-    if data['status'] == 'OK':
-        # Extract latitude and longitude
-        location = data['results'][0]['geometry']['location']
-        return location['lat'], location['lng']
-    else:
-        raise ValueError(f"Geocoding failed for {zip_code} with status {data['status']}")
-
-def calculate_distance(customer_zip, mechanic_zip):
-    """
-    Calculate the distance between two zip codes using Google Distance Matrix API.
-    """
-    customer_coords = get_coordinates_from_zip(customer_zip)
-    mechanic_coords = get_coordinates_from_zip(mechanic_zip)
-
-    distance_matrix_url = (
-        f"https://maps.googleapis.com/maps/api/distancematrix/json?"
-        f"origins={customer_coords[0]},{customer_coords[1]}&"
-        f"destinations={mechanic_coords[0]},{mechanic_coords[1]}&"
-        f"key={GOOGLE_API_KEY}&units=imperial"
-    )
-
-    response = requests.get(distance_matrix_url)
-    data = response.json()
-
-    if data['status'] == 'OK':
-        distance_text = data['rows'][0]['elements'][0]['distance']['text']
-        duration_text = data['rows'][0]['elements'][0]['duration']['text']
-        return {
-            'distance': distance_text,  # e.g., "5.1 miles"
-            'duration': duration_text   # e.g., "12 mins"
-        }
-    else:
-        raise ValueError(f"Distance calculation failed with status {data['status']}")
-
 # Method: GET
 # URL: /mechanics/distance-filter/?customer_zip=08518&max_distance=15
 class MechanicDistanceFilterView(generics.ListAPIView):
-    """
-    ListAPIView for filtering mechanic profiles by a specified distance range.
-    """
+    permission_classes = []
     serializer_class = MechanicProfileSerializer
 
     def get_queryset(self):
-        """
-        Override the get_queryset method to filter mechanics based on distance.
-        """
-        customer_zip = self.request.query_params.get('customer_zip')  # Get customer zip from query params
-        max_distance = float(self.request.query_params.get('max_distance', 10))  # Default max distance is 10 miles
+        customer_zip = self.request.query_params.get('customer_zip')
+        max_distance = float(self.request.query_params.get('max_distance', 10))  # Default to 10 miles
 
-        mechanics = MechanicProfile.objects.all()
-        filtered_mechanics = []
+        if not customer_zip:
+            raise ValidationError("Customer zip code is required.")
 
-        for mechanic in mechanics:
-            mechanic_zip = mechanic.zip_code
-            try:
-                # Calculate distance between customer and mechanic zip codes
-                distance_data = calculate_distance(customer_zip, mechanic_zip)
-                distance_in_miles = float(distance_data['distance'].replace(' miles', ''))
-                
-                # Add mechanic to the list if within the specified distance range
-                if distance_in_miles <= max_distance:
-                    filtered_mechanics.append(mechanic)
-            except ValueError:
-                continue  # Skip mechanics if distance calculation fails
+        # Use a local database or cache to get coordinates from zip code
+        customer_lat, customer_lng = get_coordinates_from_zip(customer_zip)
+        customer_location = Point(customer_lng, customer_lat, srid=4326)  # Note: longitude first
 
-        return filtered_mechanics
+        max_distance_in_meters = max_distance * 1609.34  # Convert miles to meters
+
+        mechanics = MechanicProfile.objects.filter(
+            location__distance_lte=(customer_location, D(m=max_distance_in_meters))
+        ).annotate(
+            distance=Distance('location', customer_location)
+        ).order_by('distance')
+
+        return mechanics
 
     def list(self, request, *args, **kwargs):
-        """
-        Override the list method to return filtered mechanics within the distance range.
-        """
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)    
+        return Response(serializer.data)

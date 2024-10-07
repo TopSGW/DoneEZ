@@ -1,5 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+from django.contrib.gis.db import models as gis_models
+from django.contrib.gis.geos import Point
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
@@ -56,15 +58,25 @@ class MechanicProfile(models.Model):
     phone_number = models.CharField(max_length=20, blank=True)
     web_site = models.TextField(blank=True)
     address = models.TextField(blank=True)
+    address_city = models.TextField(blank=True)
+    address_state = models.TextField(blank=True)
     zip_code = models.CharField(max_length=10)
     certifications = models.CharField(max_length=255, blank=True)
     is_mobile = models.BooleanField(default=False)
     availability = models.JSONField(default=dict, null=True)  # Stores available hours/days in JSON format
-    services_offered = models.ManyToManyField('Service', related_name='mechanics')
+    map_verified = models.CharField(max_length=40, blank=True)
+    address_latitude = models.DecimalField(max_digits=20, decimal_places=15, null=True)
+    address_longitude = models.DecimalField(max_digits=20, decimal_places=15, null=True)
+    location = gis_models.PointField(null=True, geography=True)  # Add this field
     verified = models.BooleanField(default=False)
     
     def __str__(self):
         return self.business_name
+    
+    def save(self, *args, **kwargs):
+        if self.address_longitude and self.address_latitude:
+            self.location = Point(float(self.address_longitude), float(self.address_latitude), srid=4326)
+        super(MechanicProfile, self).save(*args, **kwargs)
 
 class Vehicles(models.Model):
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='vehicles')
@@ -72,10 +84,11 @@ class Vehicles(models.Model):
     vehicle_model = models.CharField(max_length=100)
     vehicle_year = models.IntegerField()
     vehicle_mileage = models.IntegerField()
+
     def __str__(self):
         return self.user    
 
-class Service(models.Model):
+class ServiceItems(models.Model):
     name = models.CharField(max_length=255)
     description = models.TextField()
     estimated_time = models.DurationField()  # Store estimated time as duration
@@ -84,9 +97,16 @@ class Service(models.Model):
     def __str__(self):
         return self.name
 
+class MechanicServices(models.Model):
+    mechanic = models.ForeignKey(MechanicProfile, on_delete=models.CASCADE)
+    service_item = models.ForeignKey(ServiceItems, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.mechanic.business_name
+
 class QuoteRequest(models.Model):
     customer = models.ForeignKey(CustomerProfile, on_delete=models.CASCADE, related_name='quote_requests')
-    service = models.ManyToManyField(Service, related_name='quotes')
+    service = models.ForeignKey(ServiceItems, on_delete=models.CASCADE, related_name='quotes')
     preferred_date = models.DateField()
     description = models.TextField(blank=True)
     photos = models.ImageField(upload_to='service_photos/', blank=True)  # Optional photo upload

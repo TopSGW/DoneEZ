@@ -24,7 +24,7 @@ class CustomUserSerializer(serializers.ModelSerializer):
     is_mechanic = serializers.BooleanField(required=True)
     customer_profile = CustomerProfileSerializer(required=False)
     mechanic_profile = MechanicProfileSerializer(required=False)
-    password = serializers.CharField(write_only=True, required=False, validators=[validate_password])
+    password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
     class Meta:
         model = CustomUser
         fields = [
@@ -88,7 +88,6 @@ class CustomUserSerializer(serializers.ModelSerializer):
             )
 
         if is_mechanic and mechanic_profile_data:
-            mechanic_profile_data['is_approved'] = instance.mechanic_profile.is_approved  # Preserve approval status
             MechanicProfile.objects.update_or_create(
                 user=instance,
                 defaults=mechanic_profile_data
@@ -96,11 +95,44 @@ class CustomUserSerializer(serializers.ModelSerializer):
 
         return instance
 
+class StaffUserRegistrationSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+    
+    class Meta:
+        model = CustomUser
+        fields = ['email', 'password', 'first_name', 'last_name']
+    
+    def create(self, validated_data):
+        user = CustomUser.objects.create_staffuser(
+            email=validated_data['email'],
+            password=validated_data['password'],
+            first_name=validated_data.get('first_name', ''),
+            last_name=validated_data.get('last_name', ''),
+        )
+        return user
+
+class SuperUserRegistrationSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(write_only=True)
+    
+    class Meta:
+        model = CustomUser
+        fields = ['email', 'password', 'first_name', 'last_name']
+    
+    def create(self, validated_data):
+        user = CustomUser.objects.create_superuser(
+            email=validated_data['email'],
+            password=validated_data['password'],
+            first_name=validated_data.get('first_name', ''),
+            last_name=validated_data.get('last_name', ''),
+        )
+        return user
+    
 class UserRegistrationSerializer(serializers.ModelSerializer):
     is_customer = serializers.BooleanField(required=True)
     is_mechanic = serializers.BooleanField(required=True)
     customer_profile = CustomerProfileSerializer(required=False)
     mechanic_profile = MechanicProfileSerializer(required=False)
+    password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
     class Meta:
         model = CustomUser
         fields = [

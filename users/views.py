@@ -1,4 +1,5 @@
 from django.shortcuts import render
+from rest_framework import permissions
 
 # Create your views here.
 from rest_framework.views import APIView
@@ -8,7 +9,6 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import get_user_model, authenticate
 from rest_framework.permissions import IsAuthenticated
-from rest_framework.permissions import AllowAny       
 from rest_framework.exceptions import ValidationError
 
 from .utils import calculate_real_distance, calculate_straight_line_distance, get_coordinates_from_zip
@@ -16,10 +16,18 @@ from django.contrib.gis.geos import Point
 from django.contrib.gis.db.models.functions import Distance
 from django.contrib.gis.measure import D  # For distance measurements
 from .models import MechanicProfile, CustomerProfile, CustomUser
-from .serializers import  CustomUserSerializer, UserRegistrationSerializer, MechanicProfileSerializer, CustomerProfileSerializer
+from .permissions import IsSuperUser
+
+from .serializers import (
+    CustomUserSerializer, 
+    UserRegistrationSerializer, 
+    MechanicProfileSerializer, 
+    CustomerProfileSerializer,
+    StaffUserRegistrationSerializer,
+    SuperUserRegistrationSerializer,
+)
 
 User = get_user_model()
-
 class CustomUserLoginView(APIView):
     permission_classes = []  # No authentication required for login
 
@@ -78,21 +86,70 @@ class CustomUserView(APIView):
             return Response(CustomUserSerializer(user).data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class SuperUserRegistrationView(generics.CreateAPIView):
+    queryset = CustomUser.objects.all()
+    serializer_class = SuperUserRegistrationSerializer
+    permission_classes = [IsSuperUser]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        # Generate JWT tokens
+        refresh = RefreshToken.for_user(user)
+        access_token = refresh.access_token
+        return Response({
+            'user': CustomUserSerializer(user).data,
+            'refresh': str(refresh),
+            'access': str(access_token),
+        }, status=status.HTTP_201_CREATED)
+
+class StaffUserRegistrationView(generics.CreateAPIView):
+    queryset = CustomUser.objects.all()
+    serializer_class = StaffUserRegistrationSerializer
+    permission_classes = [IsSuperUser]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = serializer.save()
+        # Generate JWT tokens
+        refresh = RefreshToken.for_user(user)
+        access_token = refresh.access_token
+        return Response({
+            'user': CustomUserSerializer(user).data,
+            'refresh': str(refresh),
+            'access': str(access_token),
+        }, status=status.HTTP_201_CREATED)
+class StaffUserLoginView(APIView):
+    permission_classes = []
+
+    def post(self, request):
+        email = request.data.get('email')
+        password = request.data.get('password')
+        user = authenticate(email=email, password=password)
+        if user and user.is_staff:
+            refresh = RefreshToken.for_user(user)
+            access_token = refresh.access_token
+            return Response({
+                'user': CustomUserSerializer(user).data,
+                'refresh': str(refresh),
+                'access': str(access_token),
+            }, status=status.HTTP_200_OK)
+        return Response({'detail': 'Invalid credentials or not a staff user'}, status=status.HTTP_401_UNAUTHORIZED)
+
+
 # User Registration View
 class CustomUserRegistrationView(APIView):
     permission_classes = []  # No authentication required for registration
 
     def post(self, request):
         serializer = UserRegistrationSerializer(data=request.data)
-        print("************************")
-        print(request.data)
         if serializer.is_valid():
             user = serializer.save()
             # Generate JWT tokens
             refresh = RefreshToken.for_user(user)
             access_token = refresh.access_token
-            print("*******************")
-            print(access_token)
             return Response({
                 'user': CustomUserSerializer(user).data,
                 'refresh': str(refresh),

@@ -84,11 +84,15 @@ class CustomUserRegistrationView(APIView):
 
     def post(self, request):
         serializer = UserRegistrationSerializer(data=request.data)
+        print("************************")
+        print(request.data)
         if serializer.is_valid():
             user = serializer.save()
             # Generate JWT tokens
             refresh = RefreshToken.for_user(user)
             access_token = refresh.access_token
+            print("*******************")
+            print(access_token)
             return Response({
                 'user': CustomUserSerializer(user).data,
                 'refresh': str(refresh),
@@ -126,7 +130,7 @@ class MechanicDistanceFilterView(generics.ListAPIView):
 
     def get_queryset(self):
         customer_zip = self.request.query_params.get('customer_zip')
-        max_distance = float(self.request.query_params.get('max_distance', 10))  # Default to 10 miles
+        max_distance = float(self.request.query_params.get('max_distance', 25))  # Default to 25 miles
 
         if not customer_zip:
             raise ValidationError("Customer zip code is required.")

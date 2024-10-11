@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.contrib.gis.db import models as gis_models
 from django.contrib.gis.geos import Point
+from geopy.geocoders import Nominatim
+from geopy.exc import GeocoderTimedOut, GeocoderServiceError
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
@@ -67,15 +69,27 @@ class MechanicProfile(models.Model):
     map_verified = models.CharField(max_length=40, blank=True)
     address_latitude = models.DecimalField(max_digits=20, decimal_places=15, null=True)
     address_longitude = models.DecimalField(max_digits=20, decimal_places=15, null=True)
-    location = gis_models.PointField(null=True, geography=True)  # Add this field
+    location = gis_models.PointField(null=True, geography=True)
     verified = models.BooleanField(default=False)
     
     def __str__(self):
         return self.business_name
     
     def save(self, *args, **kwargs):
-        if self.address_longitude and self.address_latitude:
+        if not self.address_latitude or not self.address_longitude:
+            try:
+                geolocator = Nominatim(user_agent="doneez")
+                location = geolocator.geocode(self.zip_code)
+                if location:
+                    self.address_latitude = location.latitude
+                    self.address_longitude = location.longitude
+            except (GeocoderTimedOut, GeocoderServiceError):
+                # Handle the exception (e.g., log it or retry)
+                pass
+
+        if self.address_latitude and self.address_longitude:
             self.location = Point(float(self.address_longitude), float(self.address_latitude), srid=4326)
+        
         super(MechanicProfile, self).save(*args, **kwargs)
 
 class Vehicles(models.Model):

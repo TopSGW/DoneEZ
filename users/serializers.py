@@ -14,10 +14,15 @@ class CustomerProfileSerializer(serializers.ModelSerializer):
         fields = ['phone_number', 'zip_code', 'address']
 
 class MechanicProfileSerializer(serializers.ModelSerializer):
+    distance = serializers.SerializerMethodField()
     class Meta:
         model = MechanicProfile
         fields = ['business_name', 'job_title', 'web_site', 'business_info', 'heard_info', 'rating', 'availability', 'years_of_experience', 'phone_number', 'address', 'zip_code', 'certifications', 'is_mobile',
-                  'address_city', 'address_state', 'map_verified', 'address_latitude', 'address_longitude']
+                  'address_city', 'address_state', 'map_verified', 'address_latitude', 'address_longitude', 'distance']
+        
+    def get_distance(self, obj):
+        # Return the distance in miles, rounded to two decimal places
+        return round(obj.distance.mi, 2)    
 
 class CustomUserSerializer(serializers.ModelSerializer):
     is_customer = serializers.BooleanField(required=True)

@@ -164,19 +164,29 @@ SIMPLE_JWT = {
 
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': False,
+    'disable_existing_loggers': False,  # Keeps the default Django loggers
+    'formatters': {
+        'verbose': {
+            'format': '{levelname} {asctime} {module} {message}',
+            'style': '{',
+        },
+        # Add more formatters if needed
+    },
     'handlers': {
         'file': {
             'level': 'DEBUG',
             'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'debug.log'),
+            'filename': os.path.join(BASE_DIR, 'logs', 'debug.log'),
+            'formatter': 'verbose',
         },
+        # Define other handlers like 'console' if needed
     },
     'loggers': {
         'django': {
-            'handlers': ['file'],
+            'handlers': ['file'],  # Ensure 'file' is included here
             'level': 'DEBUG',
             'propagate': True,
         },
+        # Define other loggers if needed
     },
 }

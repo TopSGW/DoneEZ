@@ -8,7 +8,8 @@ class TwilioService:
     def send_whatsapp_message(self, body):
         message = self.client.messages.create(
             from_=settings.TWILIO_WHATSAPP_FROM,
-            body=body,
+            content_sid='HXab2232fa8673aca71ad3e618780e0118',
+            content_variables='{"1":"dddd","2":"3pm", "3": "Hello How are you?"}',
             to=settings.TWILIO_WHATSAPP_TO
         )
         return message.sid

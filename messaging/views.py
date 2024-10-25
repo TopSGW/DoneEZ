@@ -8,6 +8,8 @@ from .serializers import MessageSerializer
 from .services import TwilioService
 
 class SendMessageView(APIView):
+    permission_classes = []  # No authentication required for registration
+
     def post(self, request):
         serializer = MessageSerializer(data=request.data)
         if serializer.is_valid():

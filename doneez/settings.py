@@ -13,6 +13,8 @@ from datetime import timedelta
 from pathlib import Path
 from decouple import config
 
+import os
+
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-_o5872pa5@pp^!5eorxky6euwae(y#g*^nt2eer1xge=1s7c3@')
 
@@ -22,6 +24,10 @@ DEBUG = config('DEBUG', default=False, cast=bool)
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+TWILIO_ACCOUNT_SID = config('TWILIO_ACCOUNT_SID')
+TWILIO_AUTH_TOKEN = config('TWILIO_AUTH_TOKEN')
+TWILIO_WHATSAPP_FROM = config('TWILIO_WHATSAPP_FROM')
+TWILIO_WHATSAPP_TO = config('TWILIO_WHATSAPP_TO')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -42,6 +48,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',  # Optional, for token blacklisting
     'users',
+    'messaging'
 ]
 
 MIDDLEWARE = [
@@ -57,7 +64,8 @@ MIDDLEWARE = [
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
-    "https://doneez.com"
+    "https://doneez.com",
+    'chrome-extension://cnkmalbgbkpfiflmajaknpjbfohecdoi',
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -152,4 +160,23 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
     'ALGORITHM': 'HS256',
     'SIGNING_KEY': SECRET_KEY,
+}
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'debug.log'),
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
 }

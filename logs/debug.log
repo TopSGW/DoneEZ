@@ -9993,3 +9993,8 @@ DEBUG 2024-10-25 14:52:54,646 autoreload File /home/DoneEZ/.venv/lib/python3.12/
 DEBUG 2024-10-25 14:52:54,646 autoreload File /home/DoneEZ/.venv/lib/python3.12/site-packages/twilio/rest/api/v2010/account/conference/recording.py first seen with mtime 1729859380.9105406
 DEBUG 2024-10-25 14:52:54,646 autoreload File /home/DoneEZ/.venv/lib/python3.12/site-packages/twilio/rest/api/v2010/account/sip/domain/__init__.py first seen with mtime 1729859380.9335408
 DEBUG 2024-10-25 14:52:54,646 autoreload File /home/DoneEZ/.venv/lib/python3.12/site-packages/twilio/rest/api/v2010/account/usage/record/all_time.py first seen with mtime 1729859380.9475408
+ERROR 2024-10-25 18:49:04,917 log Internal Server Error: /api/messaging/send-alert/
+WARNING 2024-10-25 19:03:07,071 log Bad Request: /api/messaging/send-alert/
+ERROR 2024-10-25 19:43:00,383 log Internal Server Error: /api/messaging/send-alert/
+ERROR 2024-10-25 20:17:18,719 log Internal Server Error: /api/messaging/send-alert/
+ERROR 2024-10-25 20:43:51,702 log Internal Server Error: /api/messaging/send-alert/

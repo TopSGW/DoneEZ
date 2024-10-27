@@ -9998,3 +9998,63 @@ WARNING 2024-10-25 19:03:07,071 log Bad Request: /api/messaging/send-alert/
 ERROR 2024-10-25 19:43:00,383 log Internal Server Error: /api/messaging/send-alert/
 ERROR 2024-10-25 20:17:18,719 log Internal Server Error: /api/messaging/send-alert/
 ERROR 2024-10-25 20:43:51,702 log Internal Server Error: /api/messaging/send-alert/
+ERROR 2024-10-25 21:28:18,185 exception Invalid HTTP_HOST header: '104.236.4.217'. You may need to add '104.236.4.217' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/DoneEZ/.venv/lib/python3.12/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/DoneEZ/.venv/lib/python3.12/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/DoneEZ/.venv/lib/python3.12/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/DoneEZ/.venv/lib/python3.12/site-packages/django/http/request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '104.236.4.217'. You may need to add '104.236.4.217' to ALLOWED_HOSTS.
+WARNING 2024-10-25 21:28:18,240 log Bad Request: /api/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php
+ERROR 2024-10-26 05:18:43,744 exception Invalid HTTP_HOST header: '104.236.4.217'. You may need to add '104.236.4.217' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/DoneEZ/.venv/lib/python3.12/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/DoneEZ/.venv/lib/python3.12/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/DoneEZ/.venv/lib/python3.12/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/DoneEZ/.venv/lib/python3.12/site-packages/django/http/request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '104.236.4.217'. You may need to add '104.236.4.217' to ALLOWED_HOSTS.
+WARNING 2024-10-26 05:18:43,934 log Bad Request: /api/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php
+ERROR 2024-10-26 22:54:55,970 exception Invalid HTTP_HOST header: '104.236.4.217'. You may need to add '104.236.4.217' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/DoneEZ/.venv/lib/python3.12/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/DoneEZ/.venv/lib/python3.12/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/DoneEZ/.venv/lib/python3.12/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/DoneEZ/.venv/lib/python3.12/site-packages/django/http/request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '104.236.4.217'. You may need to add '104.236.4.217' to ALLOWED_HOSTS.
+WARNING 2024-10-26 22:54:55,974 log Bad Request: /api/geojson
+ERROR 2024-10-27 04:47:25,103 exception Invalid HTTP_HOST header: '104.236.4.217'. You may need to add '104.236.4.217' to ALLOWED_HOSTS.
+Traceback (most recent call last):
+  File "/home/DoneEZ/.venv/lib/python3.12/site-packages/django/core/handlers/exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/home/DoneEZ/.venv/lib/python3.12/site-packages/django/utils/deprecation.py", line 133, in __call__
+    response = self.process_request(request)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/DoneEZ/.venv/lib/python3.12/site-packages/django/middleware/common.py", line 48, in process_request
+    host = request.get_host()
+           ^^^^^^^^^^^^^^^^^^
+  File "/home/DoneEZ/.venv/lib/python3.12/site-packages/django/http/request.py", line 150, in get_host
+    raise DisallowedHost(msg)
+django.core.exceptions.DisallowedHost: Invalid HTTP_HOST header: '104.236.4.217'. You may need to add '104.236.4.217' to ALLOWED_HOSTS.
+WARNING 2024-10-27 04:47:25,105 log Bad Request: /api/vendor/phpunit/phpunit/src/Util/PHP/eval-stdin.php

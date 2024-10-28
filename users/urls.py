@@ -1,7 +1,7 @@
 from django.urls import path
 from .views import (
-    CustomUserLoginView, 
-    CustomUserView, 
+    CustomUserLoginView,
+    MechanicProfileView,     
     CustomUserRegistrationView, 
     MechanicDistanceFilterView, 
     StaffUserLoginView, 
@@ -17,6 +17,6 @@ urlpatterns = [
     path('staff/register/', StaffUserRegistrationView.as_view(), name='staff-register'),
     path('superuser/register', SuperUserRegistrationView.as_view(), name='superuser-register'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-    path('profile/', CustomUserView.as_view(), name='profile'),
+    path('mechanic-profile/<int:id>/', MechanicProfileView.as_view(), name='mechanic-profile'),
     path('mechanics/distance-filter/', MechanicDistanceFilterView.as_view(), name='mechanic_distance_filter')
 ]

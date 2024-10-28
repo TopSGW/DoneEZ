@@ -22,6 +22,7 @@ from .serializers import (
     CustomUserSerializer, 
     UserRegistrationSerializer, 
     MechanicProfileSerializer, 
+    MechanicProfileBasicSerializer,
     CustomerProfileSerializer,
     StaffUserRegistrationSerializer,
     SuperUserRegistrationSerializer,
@@ -159,8 +160,10 @@ class CustomUserRegistrationView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 # Mechanic View
 class MechanicProfileView(generics.RetrieveAPIView):
+    permission_classes = []
     queryset = MechanicProfile.objects.all()
-    serializer_class = MechanicProfileSerializer
+    serializer_class = MechanicProfileBasicSerializer
+    lookup_field = 'id'  # Add this line
 
 # CustomerProfile View
 class CustomerProfileView(generics.RetrieveAPIView):

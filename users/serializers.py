@@ -17,12 +17,36 @@ class MechanicProfileSerializer(serializers.ModelSerializer):
     distance = serializers.SerializerMethodField()
     class Meta:
         model = MechanicProfile
-        fields = ['business_name', 'job_title', 'web_site', 'business_info', 'heard_info', 'rating', 'availability', 'years_of_experience', 'phone_number', 'address', 'zip_code', 'certifications', 'is_mobile',
+        fields = ['id', 'business_name', 'job_title', 'web_site', 'business_info', 'heard_info', 'rating', 'availability', 'years_of_experience', 'phone_number', 'address', 'zip_code', 'certifications', 'is_mobile',
                   'address_city', 'address_state', 'map_verified', 'address_latitude', 'address_longitude', 'distance']
         
     def get_distance(self, obj):
-        # Return the distance in miles, rounded to two decimal places
-        return round(obj.distance.mi, 2)    
+        """
+        Safely retrieve the distance in miles.
+        Returns None if 'distance' is not annotated.
+        """
+        distance = getattr(obj, 'distance', None)
+        if distance:
+            # Check if distance has 'mi' or 'km' attributes
+            if hasattr(distance, 'mi'):
+                return round(distance.mi, 2)
+            elif hasattr(distance, 'km'):
+                # Convert kilometers to miles if necessary
+                miles = distance.km * 0.621371
+                return round(miles, 2)
+        return None  # Or return a default value like 0.0 if preferred    
+
+class MechanicProfileBasicSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MechanicProfile
+        fields = [
+            'id', 'business_name', 'job_title', 'web_site', 'business_info',
+            'heard_info', 'rating', 'availability', 'years_of_experience',
+            'phone_number', 'address', 'zip_code', 'certifications',
+            'is_mobile', 'address_city', 'address_state', 'map_verified',
+            'address_latitude', 'address_longitude'
+        ]
+
 
 class CustomUserSerializer(serializers.ModelSerializer):
     is_customer = serializers.BooleanField(required=True)

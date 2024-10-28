@@ -1,5 +1,5 @@
 # views.py
-
+from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -30,7 +30,7 @@ class SendMessageView(APIView):
             twilio_service = TwilioService()
             try:
                 message_sid = twilio_service.send_whatsapp_message(
-                    content_sid='HXab2232fa8673aca71ad3e618780e0118',  # Replace with your actual Content SID
+                    content_sid=settings.TWILIO_CONTENT_ID,  # Replace with your actual Content SID
                     content_variables=variables,
                     to="whatsapp:" + to_phone_number
                 )

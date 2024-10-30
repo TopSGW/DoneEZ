@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'rest_framework_simplejwt.token_blacklist',  # Optional, for token blacklisting
+    'django_filters',
     'users',
     'messaging'
 ]
@@ -150,6 +151,14 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
+    'DEFAULT_PAGINATION_CLASS': 'users.pagination.CustomPageNumberPagination',
+    'PAGE_SIZE': 10, 
+    'DEFAULT_FILTER_BACKENDS': [
+        'django_filters.rest_framework.DjangoFilterBackend',
+        'rest_framework.filters.OrderingFilter',  # Optional: for ordering
+        'rest_framework.filters.SearchFilter',    # Optional: for search
+    ],
+
 }
 
 # Simple JWT configuration
@@ -163,31 +172,31 @@ SIMPLE_JWT = {
     'SIGNING_KEY': SECRET_KEY,
 }
 
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,  # Keeps the default Django loggers
-    'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {message}',
-            'style': '{',
-        },
-        # Add more formatters if needed
-    },
-    'handlers': {
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'logs', 'debug.log'),
-            'formatter': 'verbose',
-        },
-        # Define other handlers like 'console' if needed
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['file'],  # Ensure 'file' is included here
-            'level': 'DEBUG',
-            'propagate': True,
-        },
-        # Define other loggers if needed
-    },
-}
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,  # Keeps the default Django loggers
+#     'formatters': {
+#         'verbose': {
+#             'format': '{levelname} {asctime} {module} {message}',
+#             'style': '{',
+#         },
+#         # Add more formatters if needed
+#     },
+#     'handlers': {
+#         'file': {
+#             'level': 'DEBUG',
+#             'class': 'logging.FileHandler',
+#             'filename': os.path.join(BASE_DIR, 'logs', 'debug.log'),
+#             'formatter': 'verbose',
+#         },
+#         # Define other handlers like 'console' if needed
+#     },
+#     'loggers': {
+#         'django': {
+#             'handlers': ['file'],  # Ensure 'file' is included here
+#             'level': 'DEBUG',
+#             'propagate': True,
+#         },
+#         # Define other loggers if needed
+#     },
+# }

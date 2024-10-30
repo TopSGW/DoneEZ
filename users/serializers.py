@@ -44,7 +44,7 @@ class MechanicProfileBasicSerializer(serializers.ModelSerializer):
             'heard_info', 'rating', 'availability', 'years_of_experience',
             'phone_number', 'address', 'zip_code', 'certifications',
             'is_mobile', 'address_city', 'address_state', 'map_verified',
-            'address_latitude', 'address_longitude'
+            'address_latitude', 'address_longitude', 'offered_services'
         ]
 
 

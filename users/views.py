@@ -10,6 +10,10 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import get_user_model, authenticate
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import ValidationError
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.filters import OrderingFilter, SearchFilter
+
+from .filters import MechanicProfileFilter
 
 from .utils import calculate_real_distance, calculate_straight_line_distance, get_coordinates_from_zip
 from django.contrib.gis.geos import Point
@@ -27,6 +31,9 @@ from .serializers import (
     StaffUserRegistrationSerializer,
     SuperUserRegistrationSerializer,
 )
+
+from .pagination import CustomPageNumberPagination
+
 
 User = get_user_model()
 class CustomUserLoginView(APIView):
@@ -213,3 +220,23 @@ class MechanicDistanceFilterView(generics.ListAPIView):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
+
+class MechanicProfileAllView(generics.ListAPIView):
+    permission_classes = []
+    queryset = MechanicProfile.objects.select_related('user').all()
+    serializer_class = MechanicProfileBasicSerializer
+    pagination_class = CustomPageNumberPagination
+    filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
+    filterset_class = MechanicProfileFilter
+    ordering_fields = [
+        'business_name',
+        'rating',
+        'years_of_experience',
+    ]
+    ordering = ['business_name']  # Default ordering
+    search_fields = ['business_name', 'business_info', 'heard_info', 'job_title', 'certifications', 'offered_services']
+
+
+
+
+

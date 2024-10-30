@@ -1,3 +1,4 @@
+from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
 from django.contrib.gis.db import models as gis_models
@@ -76,7 +77,8 @@ class MechanicProfile(models.Model):
     address_longitude = models.DecimalField(max_digits=20, decimal_places=15, null=True)
     location = gis_models.PointField(null=True, geography=True)
     verified = models.BooleanField(default=False)
-    
+    offered_services = ArrayField(models.CharField(max_length=200, blank=True), blank=True, null=True)
+
     def __str__(self):
         return self.business_name
     

@@ -1,40 +1,59 @@
 # services.py
-
 from twilio.rest import Client
 from django.conf import settings
 import logging
-import json  # For serializing variables
+from typing import Dict, Optional
+from datetime import datetime
+from dateutil import parser
 
 logger = logging.getLogger(__name__)
 
-class TwilioService:
-    def __init__(self):
-        self.client = Client(settings.TWILIO_ACCOUNT_SID, settings.TWILIO_AUTH_TOKEN)
+class WhatsAppMessageError(Exception):
+    """Custom exception for WhatsApp messaging errors"""
+    pass
 
-    def send_whatsapp_message(self, content_sid: str, content_variables: dict, to: str) -> str:
-        """
-        Sends a WhatsApp message using a Twilio template.
+class TwilioService:
+    """Service class for handling Twilio WhatsApp communication"""
+    
+    def __init__(self, account_sid: Optional[str] = None, auth_token: Optional[str] = None):
+        self.client = Client(
+            account_sid or settings.TWILIO_ACCOUNT_SID,
+            auth_token or settings.TWILIO_AUTH_TOKEN
+        )
+        self.whatsapp_from = settings.TWILIO_WHATSAPP_FROM
         
-        :param content_sid: The Content SID of the Twilio message template.
-        :param content_variables: A dictionary mapping template variable indices to their values.
-        :param to: The recipient's WhatsApp number (e.g., 'whatsapp:+1234567890').
-        :return: The SID of the sent message.
+    def _format_whatsapp_number(self, phone_number: str) -> str:
+        """Ensures phone number has whatsapp: prefix"""
+        return f"whatsapp:{phone_number}" if not phone_number.startswith('whatsapp:') else phone_number
+
+    def send_whatsapp_message(self, message: str, to: str) -> str:
         """
-        if not to.startswith('whatsapp:'):
-            to = f'whatsapp:{to}'
+        Send a WhatsApp message using Twilio
         
+        Args:
+            message: The message text to send
+            to: Recipient's phone number
+            
+        Returns:
+            str: Message SID from Twilio
+            
+        Raises:
+            WhatsAppMessageError: If message sending fails
+        """
         try:
-            # Serialize the variables to a JSON string as required by Twilio
-            variables_json = json.dumps(content_variables)
+            logger.debug(f"Sending WhatsApp message to {to}: {message}")
+            to_number = self._format_whatsapp_number(to)
             
             message = self.client.messages.create(
-                from_=settings.TWILIO_WHATSAPP_FROM,  # Ensure this is in 'whatsapp:+1234567890' format
-                content_sid=content_sid,
-                content_variables=variables_json,
-                to=to
+                from_=self.whatsapp_from,
+                body=message,
+                to=to_number
             )
+            
             logger.info(f"Message sent successfully. SID: {message.sid}")
             return message.sid
+            
         except Exception as e:
-            logger.error(f"Error sending WhatsApp message: {str(e)}")
-            raise
+            error_msg = f"Failed to send WhatsApp message: {str(e)}"
+            logger.error(error_msg, exc_info=True)
+            raise WhatsAppMessageError(error_msg)

@@ -17,13 +17,13 @@ class SendMessageView(APIView):
         super().__init__(*args, **kwargs)
         self.twilio_service = TwilioService()
 
-    def _format_message(self, data: dict) -> str:
+    def _format_message(self, data: dict) -> dict:
         """Format the message text with all required information"""
-        return (
-            f"Alert name: {data['soundConfigName']}\n"
-            f"Time: {data['timeStamp']}\n"
-            f"Message: {data['message']}"
-        )
+        return { 
+            "1" : data['soundConfigName'],
+            "2": data['timeStamp'],
+            "3" : data['message']
+        }
 
     def post(self, request):
         """Handle POST request to send WhatsApp message"""

@@ -21,6 +21,7 @@ class TwilioService:
             auth_token or settings.TWILIO_AUTH_TOKEN
         )
         self.whatsapp_from = settings.TWILIO_WHATSAPP_FROM
+        self.content_sid = settings.TWILIO_CONTENT_ID
         
     def _format_whatsapp_number(self, phone_number: str) -> str:
         """Ensures phone number has whatsapp: prefix"""
@@ -46,7 +47,8 @@ class TwilioService:
             
             message = self.client.messages.create(
                 from_=self.whatsapp_from,
-                body=message,
+                content_sid=self.content_sid,
+                content_variables=f'{message}',
                 to=to_number
             )
             

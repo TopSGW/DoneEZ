@@ -17,13 +17,56 @@ class SendMessageView(APIView):
         super().__init__(*args, **kwargs)
         self.twilio_service = TwilioService()
 
+    def sanitize_message_variable(self, value):
+        # Dictionary mapping of Unicode characters to their GSM-7 replacements
+        replacements = {
+            '“': '"',
+            '”': '"',
+            '«': '"',
+            '»': '"',
+            '„': '"',
+            '‟': '"',
+            '❝': '"',
+            '❞': '"',
+            '〝': '"',
+            '〞': '"',
+            '＂': '"',
+            '‘': "'",
+            '’': "'",
+            '‚': "'",
+            '‛': "'",
+            '❛': "'",
+            '❜': "'",
+            '＇': "'",
+            '´': "'",
+            '｀': "'",
+            'ˊ': "'",
+            'ˋ': "'",
+            # Add other replacements as necessary based on the list
+            '…': '...',
+            '–': '-',
+            '—': '-',
+            # Remove non-printable and control characters
+            '\u0000': '',
+            '\u0003': '',
+            '\u0004': '',
+            # Add other control characters to remove
+        }
+
+        # Replace characters based on the mapping
+        for orig_char, replacement in replacements.items():
+            value = value.replace(orig_char, replacement)
+        # Remove any remaining non-ASCII characters if necessary
+        value = ''.join(c for c in value if ord(c) < 128)
+        return value
+
     def _format_message(self, data: dict) -> dict:
         """Format the message text with all required information"""
-        return { 
-            "1" : data['soundConfigName'],
-            "2": data['timeStamp'],
-            "3" : data['message']
-        }
+        return ( 
+            f"Alert name: {data['soundConfigName']}\n"
+            f"Time: {data['timeStamp']}\n"
+            f"Message: {data['message']}"
+        )
 
     def post(self, request):
         """Handle POST request to send WhatsApp message"""

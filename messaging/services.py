@@ -5,6 +5,7 @@ import logging
 from typing import Dict, Optional
 from datetime import datetime
 from dateutil import parser
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -22,11 +23,12 @@ class TwilioService:
         )
         self.whatsapp_from = settings.TWILIO_WHATSAPP_FROM
         self.content_sid = settings.TWILIO_CONTENT_ID
+        self.messaging_service_sid = settings.TWILIO_MESSAGE_SERVICE_ID
         
     def _format_whatsapp_number(self, phone_number: str) -> str:
         """Ensures phone number has whatsapp: prefix"""
         return f"whatsapp:{phone_number}" if not phone_number.startswith('whatsapp:') else phone_number
-
+    
     def send_whatsapp_message(self, message: str, to: str) -> str:
         """
         Send a WhatsApp message using Twilio
@@ -44,11 +46,19 @@ class TwilioService:
         try:
             logger.debug(f"Sending WhatsApp message to {to}: {message}")
             to_number = self._format_whatsapp_number(to)
-            
+            content_variables_json = json.dumps(message, ensure_ascii=False)
+
+            try:
+                json.loads(content_variables_json)
+                print("JSON is valid.", content_variables_json)
+
+            except json.JSONDecodeError as e:
+                print("JSON decoding error:", e)
+                # Handle the error as needed
+
             message = self.client.messages.create(
-                from_=self.whatsapp_from,
-                content_sid=self.content_sid,
-                content_variables=f'{message}',
+                messaging_service_sid=self.messaging_service_sid,
+                body="hello there",
                 to=to_number
             )
             

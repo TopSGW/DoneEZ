@@ -29,7 +29,7 @@ TWILIO_AUTH_TOKEN = config('TWILIO_AUTH_TOKEN')
 TWILIO_WHATSAPP_FROM = config('TWILIO_WHATSAPP_FROM')
 TWILIO_WHATSAPP_TO = config('TWILIO_WHATSAPP_TO')
 TWILIO_CONTENT_ID = config('TWILIO_CONTENT_ID')
-
+TWILIO_MESSAGE_SERVICE_ID = config('TWILIO_MESSAGE_SERVICE_ID')
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 

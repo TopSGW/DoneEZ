@@ -20,7 +20,7 @@ from django.contrib.gis.geos import Point
 from django.contrib.gis.db.models.functions import Distance
 from django.contrib.gis.measure import D  # For distance measurements
 from .models import MechanicProfile, CustomerProfile, CustomUser
-from .permissions import IsSuperUser
+from .permissions import IsSuperUser, IsStaffUser
 
 from .serializers import (
     CustomUserSerializer, 
@@ -170,7 +170,7 @@ class MechanicProfileView(generics.RetrieveAPIView):
     permission_classes = []
     queryset = MechanicProfile.objects.all()
     serializer_class = MechanicProfileBasicSerializer
-    lookup_field = 'id'  # Add this line
+    lookup_field = 'id'
 
 # CustomerProfile View
 class CustomerProfileView(generics.RetrieveAPIView):
@@ -236,7 +236,8 @@ class MechanicProfileAllView(generics.ListAPIView):
     ordering = ['business_name']  # Default ordering
     search_fields = ['business_name', 'business_info', 'heard_info', 'job_title', 'certifications', 'offered_services']
 
-
-
-
-
+class MechanicProfileDetailView(generics.RetrieveUpdateDestroyAPIView):
+    queryset = MechanicProfile.objects.all()
+    serializer_class = MechanicProfileBasicSerializer
+    permission_classes = [IsStaffUser]
+    lookup_field = 'id'

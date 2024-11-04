@@ -8,7 +8,8 @@ from .views import (
     StaffUserRegistrationView,
     SuperUserRegistrationView,
     CustomUserView,
-    MechanicProfileAllView
+    MechanicProfileAllView,
+    MechanicProfileDetailView
 )
 from rest_framework_simplejwt.views import TokenRefreshView
 
@@ -22,5 +23,6 @@ urlpatterns = [
     path('customuer/', CustomUserView.as_view(), name='custom_user'),
     path('mechanic-profile-all/', MechanicProfileAllView.as_view(), name='mechanic-all'),
     path('mechanic-profile/<int:id>/', MechanicProfileView.as_view(), name='mechanic-profile'),
+    path('staff/mechanic-profile/<int:id>/', MechanicProfileDetailView.as_view(), name='staff-mechanic-profile'),
     path('mechanics/distance-filter/', MechanicDistanceFilterView.as_view(), name='mechanic_distance_filter')
 ]

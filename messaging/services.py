@@ -58,7 +58,8 @@ class TwilioService:
 
             message = self.client.messages.create(
                 messaging_service_sid=self.messaging_service_sid,
-                body="hello there",
+                from_=self.whatsapp_from,
+                body=content_variables_json,
                 to=to_number
             )
             

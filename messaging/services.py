@@ -57,10 +57,11 @@ class TwilioService:
                 # Handle the error as needed
 
             message = self.client.messages.create(
-                messaging_service_sid=self.messaging_service_sid,
                 from_=self.whatsapp_from,
-                body=content_variables_json,
-                to=to_number
+                content_sid=self.content_sid,
+                content_variables=content_variables_json,
+                to=to_number,
+                messaging_service_sid=self.messaging_service_sid
             )
             
             logger.info(f"Message sent successfully. SID: {message.sid}")

@@ -1,8 +1,7 @@
-# serializers.py
 from rest_framework import serializers
-from dateutil import parser
 from django.core.validators import RegexValidator
-
+from dateutil import parser
+import pytz
 
 class MessageSerializer(serializers.Serializer):
     soundConfigName = serializers.CharField(max_length=100)
@@ -19,8 +18,20 @@ class MessageSerializer(serializers.Serializer):
     )
 
     def validate_timeStamp(self, value):
-        """Validate and normalize timestamp format"""
+        """
+        Validate and normalize timestamp format to 12-hour clock with AM/PM in EST timezone
+        """
         try:
-            return parser.isoparse(value).strftime("%Y-%m-%d %H:%M:%S")
+            # Parse the input timestamp
+            parsed_time = parser.isoparse(value)
+            
+            # Convert to EST timezone
+            est_tz = pytz.timezone('America/New_York')
+            if parsed_time.tzinfo is None:
+                parsed_time = pytz.utc.localize(parsed_time)
+            est_time = parsed_time.astimezone(est_tz)
+            
+            # Format to 12-hour clock with AM/PM
+            return est_time.strftime("%Y-%m-%d %I:%M:%S %p")
         except ValueError as e:
             raise serializers.ValidationError(f"Invalid timestamp format: {str(e)}")

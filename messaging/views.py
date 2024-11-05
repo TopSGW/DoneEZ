@@ -18,7 +18,6 @@ class SendMessageView(APIView):
         self.twilio_service = TwilioService()
 
     def sanitize_message_variable(self, value):
-        # Dictionary mapping of Unicode characters to their GSM-7 replacements
         replacements = {
             '“': '"',
             '”': '"',
@@ -42,31 +41,37 @@ class SendMessageView(APIView):
             '｀': "'",
             'ˊ': "'",
             'ˋ': "'",
-            # Add other replacements as necessary based on the list
             '…': '...',
             '–': '-',
             '—': '-',
-            # Remove non-printable and control characters
+            # Remove specific control characters if necessary
             '\u0000': '',
             '\u0003': '',
             '\u0004': '',
-            # Add other control characters to remove
+            '\n': ' ',
         }
 
         # Replace characters based on the mapping
         for orig_char, replacement in replacements.items():
             value = value.replace(orig_char, replacement)
-        # Remove any remaining non-ASCII characters if necessary
-        value = ''.join(c for c in value if ord(c) < 128)
+        
+        # Optionally, you can normalize Unicode characters
+        import unicodedata
+        value = unicodedata.normalize('NFKC', value)
+        
+        # Optionally remove any remaining non-ASCII characters
+        # Uncomment the next line if you still need to remove them
+        # value = ''.join(c for c in value if ord(c) < 128)
+        
         return value
 
     def _format_message(self, data: dict) -> dict:
         """Format the message text with all required information"""
-        return ( 
-            f"Alert name: {data['soundConfigName']}\n"
-            f"Time: {data['timeStamp']}\n"
-            f"Message: {data['message']}"
-        )
+        return { 
+            "1" : self.sanitize_message_variable(data['soundConfigName']),
+            "2": self.sanitize_message_variable(data['timeStamp']),
+            "3" : self.sanitize_message_variable(data['message'])
+        }
 
     def post(self, request):
         """Handle POST request to send WhatsApp message"""
